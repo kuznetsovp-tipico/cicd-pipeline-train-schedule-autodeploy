@@ -39,7 +39,23 @@ pipeline {
                 }
             }
         }
-        stage ('Smoke tests') {
+
+        stage('CanaryDeploy') {
+            when {
+                branch 'master'
+            }
+            environment { 
+                CANARY_REPLICAS = 1
+            }
+            steps {
+                kubernetesDeploy(
+                    kubeconfigId: 'kubeconfig',
+                    configs: 'train-schedule-kube-canary.yml',
+                    enableConfigSubstitution: true
+                )
+            }
+        }
+                stage ('Smoke tests') {
             when {
                 branch 'master'
             }
@@ -54,21 +70,6 @@ pipeline {
                         error("Smoke tests is faled")
                     }
                 }
-            }
-        }
-        stage('CanaryDeploy') {
-            when {
-                branch 'master'
-            }
-            environment { 
-                CANARY_REPLICAS = 1
-            }
-            steps {
-                kubernetesDeploy(
-                    kubeconfigId: 'kubeconfig',
-                    configs: 'train-schedule-kube-canary.yml',
-                    enableConfigSubstitution: true
-                )
             }
         }
         stage('DeployToProduction') {
