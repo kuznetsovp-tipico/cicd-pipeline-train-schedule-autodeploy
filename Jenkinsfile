@@ -3,6 +3,7 @@ pipeline {
     environment {
         //be sure to replace "willbla" with your own Docker Hub username
         DOCKER_IMAGE_NAME = "stonemct/train-schedule"
+        CANARY_REPLICAS = 0
     }
     stages {
         stage('Build') {
@@ -38,6 +39,22 @@ pipeline {
                 }
             }
         }
+        stage ('Smoke tests') {
+            when {
+                branch 'master'
+            }
+            steps {
+                script {
+                    sleep ( time: 5 )
+                    def httpresponse = httpRequest (
+                        utl: "http://${KUBE_MASTER_IP}:8081",
+                        timeout: 30)
+                }
+                if (httpresponse.status != 200) {
+                    error("Smoke tests is faled")
+                }
+            }
+        }
         stage('CanaryDeploy') {
             when {
                 branch 'master'
@@ -57,23 +74,24 @@ pipeline {
             when {
                 branch 'master'
             }
-            environment { 
-                CANARY_REPLICAS = 0
-            }
             steps {
-                input 'Deploy to Production?'
                 milestone(1)
-                kubernetesDeploy(
-                    kubeconfigId: 'kubeconfig',
-                    configs: 'train-schedule-kube-canary.yml',
-                    enableConfigSubstitution: true
-                )
+
                 kubernetesDeploy(
                     kubeconfigId: 'kubeconfig',
                     configs: 'train-schedule-kube.yml',
                     enableConfigSubstitution: true
                 )
             }
+        }
+    }
+    post {
+        cleanup {
+                kubernetesDeploy(
+                    kubeconfigId: 'kubeconfig',
+                    configs: 'train-schedule-kube-canary.yml',
+                    enableConfigSubstitution: true
+                )
         }
     }
 }
