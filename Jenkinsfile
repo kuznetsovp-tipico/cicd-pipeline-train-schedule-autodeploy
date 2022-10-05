@@ -47,8 +47,8 @@ pipeline {
                 script {
                     sleep ( time: 5 )
                     def httpresponse = httpRequest (
-                        url: "http://${KUBE_MASTER_IP}:8081",
-                        timeout: 30)
+                        url: "http://${KUBE_MASTER_IP}:8081/",
+                        timeout: 60 )
                 
                     if (httpresponse.status != 200) {
                         error("Smoke tests is faled")
