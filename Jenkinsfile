@@ -49,9 +49,10 @@ pipeline {
                     def httpresponse = httpRequest (
                         utl: "http://${KUBE_MASTER_IP}:8081",
                         timeout: 30)
-                }
-                if (httpresponse.status != 200) {
-                    error("Smoke tests is faled")
+                
+                    if (httpresponse.status != 200) {
+                        error("Smoke tests is faled")
+                    }
                 }
             }
         }
@@ -92,6 +93,7 @@ pipeline {
                     configs: 'train-schedule-kube-canary.yml',
                     enableConfigSubstitution: true
                 )
+
         }
     }
 }
