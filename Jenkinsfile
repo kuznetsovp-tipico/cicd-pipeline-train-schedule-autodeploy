@@ -55,7 +55,7 @@ pipeline {
                 )
             }
         }
-                stage ('Smoke tests') {
+        stage ('Smoke tests') {
             when {
                 branch 'master'
             }
