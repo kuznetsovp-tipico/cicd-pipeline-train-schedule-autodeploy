@@ -95,6 +95,7 @@ pipeline {
                     enableConfigSubstitution: true
                 )
 
+            echo 'post action: cleanup done'
         }
     }
 }
